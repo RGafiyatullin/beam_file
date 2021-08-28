@@ -51,7 +51,7 @@ fn dump_single_file(input_file: &str, chunks: &HashSet<&[u8]>) -> Result<(), Any
 
 fn dump_chunk(chunk: StandardChunk) -> Result<(), AnyError> {
     let id = std::str::from_utf8(chunk.id())?;
-    println!("- {}", id);
+    println!(" CHUNK:{}", id);
     match chunk {
         StandardChunk::Abst(abst_chunk) => dump_abst_chunk(abst_chunk)?,
         StandardChunk::Attr(attr_chunk) => dump_attr_chunk(attr_chunk)?,
@@ -78,52 +78,52 @@ fn dump_docs_chunk(docs_chunk: DocsChunk) -> Result<(), AnyError> {
 }
 
 fn dump_funt_chunk(funt_chunk: FunTChunk) -> Result<(), AnyError> {
-    println!(" functions: {:#?}", funt_chunk.functions);
+    println!("  functions: {:#?}", funt_chunk.functions);
     Ok(())
 }
 
 fn dump_litt_chunk(litt_chunk: LitTChunk) -> Result<(), AnyError> {
-    println!(" literlas: {:#?}", litt_chunk.literals);
+    println!("  literlas: {:#?}", litt_chunk.literals);
     Ok(())
 }
 
 fn dump_strt_chunk(strt_chunk: StrTChunk) -> Result<(), AnyError> {
-    println!(" strings: {:#?}", strt_chunk.strings);
+    println!("  strings: {:#?}", strt_chunk.strings);
     Ok(())
 }
 
 fn dump_abst_chunk(abst_chunk: AbstChunk) -> Result<(), AnyError> {
-    println!("{}", PrettyBytes(&abst_chunk.term));
+    println!(" ast: {:#?}", abst_chunk.term);
     Ok(())
 }
 
 fn dump_atom_chunk(atom_chunk: AtomChunk) -> Result<(), AnyError> {
-    println!(" atoms: {:#?}", atom_chunk.atoms);
+    println!("  atoms: {:#?}", atom_chunk.atoms);
     Ok(())
 }
 
 fn dump_expt_chunk(expt_chunk: ExpTChunk) -> Result<(), AnyError> {
-    println!(" exports: {:#?}", expt_chunk.exports);
+    println!("  exports: {:#?}", expt_chunk.exports);
     Ok(())
 }
 
 fn dump_impt_chunk(impt_chunk: ImpTChunk) -> Result<(), AnyError> {
-    println!(" imports: {:#?}", impt_chunk.imports);
+    println!("  imports: {:#?}", impt_chunk.imports);
     Ok(())
 }
 
 fn dump_loct_chunk(loct_chunk: LocTChunk) -> Result<(), AnyError> {
-    println!(" locals: {:#?}", loct_chunk.locals);
+    println!("  locals: {:#?}", loct_chunk.locals);
     Ok(())
 }
 
 fn dump_cinf_chunk(cinf_chunk: CInfChunk) -> Result<(), AnyError> {
-    println!("{}", PrettyBytes(&cinf_chunk.term));
+    println!("  info: {:#?}", cinf_chunk.term);
     Ok(())
 }
 
 fn dump_attr_chunk(attr_chunk: AttrChunk) -> Result<(), AnyError> {
-    println!("{}", PrettyBytes(&attr_chunk.term));
+    println!("  attributes: {:#?}", attr_chunk.term);
     Ok(())
 }
 
@@ -138,11 +138,11 @@ fn dump_raw_chunk(raw_chunk: RawChunk) -> Result<(), AnyError> {
 }
 
 fn dump_code_chunk(code_chunk: CodeChunk) -> Result<(), AnyError> {
-    println!(" info-size: {}", code_chunk.info_size);
-    println!(" version: {}", code_chunk.version);
-    println!(" opcode_max: {}", code_chunk.opcode_max);
-    println!(" label-count: {}", code_chunk.label_count);
-    println!(" function-count: {}", code_chunk.function_count);
+    println!("  info-size: {}", code_chunk.info_size);
+    println!("  version: {}", code_chunk.version);
+    println!("  opcode_max: {}", code_chunk.opcode_max);
+    println!("  label-count: {}", code_chunk.label_count);
+    println!("  function-count: {}", code_chunk.function_count);
 
     println!("{}", PrettyBytes(&code_chunk.bytecode));
 

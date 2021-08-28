@@ -335,8 +335,7 @@ impl Chunk for LitTChunk {
         }
         let literals = literals
             .into_iter()
-            .map(Cursor::new)
-            .map(parts::EtfTerm::decode)
+            .map(aux::etf_decode)
             .collect::<StdResult<Vec<_>, _>>()?;
         Ok(LitTChunk { literals })
     }
@@ -344,11 +343,9 @@ impl Chunk for LitTChunk {
         let mut uncompressed_size = 0;
         let mut encoded_literals = Vec::with_capacity(self.literals.len());
         for literal in &self.literals {
-            let mut encode_buf = Vec::new();
-            let () = literal.encode(&mut encode_buf)?;
-
-            uncompressed_size += encode_buf.len();
-            let () = encoded_literals.push(encode_buf);
+            let encoded = aux::etf_encode(literal)?;
+            uncompressed_size += encoded.len();
+            let () = encoded_literals.push(encoded);
         }
 
         let () = writer.write_u32::<BigEndian>(uncompressed_size as u32)?;
@@ -444,7 +441,7 @@ impl Chunk for FunTChunk {
 }
 
 /// A representation of the `"Attr"` chunk.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct AttrChunk {
     /// The attributes of a module (i.e., BEAM file).
     ///
@@ -452,7 +449,7 @@ pub struct AttrChunk {
     /// ```erlang
     /// term_to_binary(Module:module_info(attributes)).
     /// ```
-    pub term: parts::ExternalTermFormatBinary,
+    pub term: parts::EtfTerm,
 }
 impl Chunk for AttrChunk {
     fn id(&self) -> &Id {
@@ -464,17 +461,18 @@ impl Chunk for AttrChunk {
     {
         aux::check_chunk_id(id, b"Attr")?;
         let mut buf = Vec::new();
-        reader.read_to_end(&mut buf)?;
-        Ok(AttrChunk { term: buf })
+        let _bytes_read = reader.read_to_end(&mut buf)?;
+        let term = aux::etf_decode(buf)?;
+        Ok(AttrChunk { term })
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {
-        writer.write_all(&self.term)?;
+        let () = writer.write_all(aux::etf_encode(&self.term)?.as_slice())?;
         Ok(())
     }
 }
 
 /// A representation of the `"CInf"` chunk.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct CInfChunk {
     /// The compile information of a module (i.e., BEAM file).
     ///
@@ -482,7 +480,7 @@ pub struct CInfChunk {
     /// ```erlang
     /// term_to_binary(Module:module_info(compile)).
     /// ```
-    pub term: parts::ExternalTermFormatBinary,
+    pub term: parts::EtfTerm,
 }
 impl Chunk for CInfChunk {
     fn id(&self) -> &Id {
@@ -495,23 +493,24 @@ impl Chunk for CInfChunk {
         aux::check_chunk_id(id, b"CInf")?;
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf)?;
-        Ok(CInfChunk { term: buf })
+        let term = aux::etf_decode(&buf)?;
+        Ok(CInfChunk { term })
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {
-        writer.write_all(&self.term)?;
+        let () = writer.write_all(aux::etf_encode(&self.term)?.as_slice())?;
         Ok(())
     }
 }
 
 /// A representation of the `"Abst"` chunk.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct AbstChunk {
     /// The abstract code of a module (i.e., BEAM file).
     ///
     /// The value is encoded in the [External Term Format]
     /// (http://erlang.org/doc/apps/erts/erl_ext_dist.html) and
     /// represents [The Abstract Format](http://erlang.org/doc/apps/erts/absform.html).
-    pub term: parts::ExternalTermFormatBinary,
+    pub term: parts::EtfTerm,
 }
 impl Chunk for AbstChunk {
     fn id(&self) -> &Id {
@@ -522,12 +521,14 @@ impl Chunk for AbstChunk {
         Self: Sized,
     {
         aux::check_chunk_id(id, b"Abst")?;
+
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf)?;
-        Ok(AbstChunk { term: buf })
+        let term = aux::etf_decode(&buf)?;
+        Ok(AbstChunk { term })
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {
-        writer.write_all(&self.term)?;
+        let () = writer.write_all(aux::etf_encode(&self.term)?.as_slice())?;
         Ok(())
     }
 }
@@ -755,5 +756,18 @@ mod aux {
         } else {
             Ok(())
         }
+    }
+
+    pub fn etf_encode(term: &parts::EtfTerm) -> Result<Vec<u8>> {
+        let mut encode_buf = Vec::new();
+        let () = term.encode(&mut encode_buf)?;
+        Ok(encode_buf)
+    }
+    pub fn etf_decode<I>(bytes: I) -> Result<parts::EtfTerm>
+    where
+        I: AsRef<[u8]>,
+    {
+        let term = parts::EtfTerm::decode(Cursor::new(bytes))?;
+        Ok(term)
     }
 }
