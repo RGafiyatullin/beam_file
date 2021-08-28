@@ -15,11 +15,6 @@ pub type AtomId = u32;
 /// The number of input arguments of a function.
 pub type Arity = u32;
 
-/// An erlang term encoded in [External Term Fromat].
-///
-/// [External Term Fromat]: http://erlang.org/doc/apps/erts/erl_ext_dist.html
-pub type ExternalTermFormatBinary = Vec<u8>;
-
 /// An atom.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Atom {
