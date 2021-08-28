@@ -182,7 +182,7 @@ impl Chunk for CodeChunk {
         Self: Sized,
     {
         aux::check_chunk_id(id, b"Code")?;
-        
+
         let info_size = reader.read_u32::<BigEndian>()?;
         let version = reader.read_u32::<BigEndian>()?;
         let opcode_max = reader.read_u32::<BigEndian>()?;
@@ -199,7 +199,7 @@ impl Chunk for CodeChunk {
             function_count,
             bytecode,
         };
-        
+
         Ok(code)
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {

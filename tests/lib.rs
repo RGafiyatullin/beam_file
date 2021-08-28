@@ -228,11 +228,13 @@ fn encode_then_decode_should_be_equal_to_the_original() {
     )
     .unwrap();
 
-    let beam_from_file = BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&original)).unwrap();
+    let beam_from_file =
+        BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&original)).unwrap();
     let mut encoded = Vec::new();
     beam_from_file.to_writer(&mut encoded).unwrap();
 
-    let beam_from_encoded = BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&encoded)).unwrap();
+    let beam_from_encoded =
+        BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&encoded)).unwrap();
 
     assert_eq!(beam_from_file, beam_from_encoded);
 }
