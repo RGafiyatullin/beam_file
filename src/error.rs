@@ -1,3 +1,5 @@
+use eetf::DecodeError as ETFDecodeError;
+use eetf::EncodeError as ETFEncodeError;
 use std::io::Error as IoError;
 use std::str::Utf8Error;
 
@@ -10,6 +12,12 @@ pub enum Error {
 
     #[error("Error::InvalidString")]
     InvalidString(#[source] Utf8Error),
+
+    #[error("Error::ETFDecodeError")]
+    ETFDecodeError(#[source] ETFDecodeError),
+
+    #[error("Error::ETFDecodeError")]
+    ETFEncodeError(#[source] ETFEncodeError),
 
     #[error("Error::UnexpectedMagicNumber: magic_number - {:?}", magic_number)]
     UnexpectedMagicNumber { magic_number: [u8; 4] },
@@ -29,5 +37,15 @@ impl From<IoError> for Error {
 impl From<Utf8Error> for Error {
     fn from(e: Utf8Error) -> Self {
         Self::InvalidString(e)
+    }
+}
+impl From<ETFDecodeError> for Error {
+    fn from(e: ETFDecodeError) -> Self {
+        Self::ETFDecodeError(e)
+    }
+}
+impl From<ETFEncodeError> for Error {
+    fn from(e: ETFEncodeError) -> Self {
+        Self::ETFEncodeError(e)
     }
 }

@@ -153,7 +153,11 @@ fn standard_chunks() {
         find_chunk!(beam, LitT)
             .literals
             .iter()
-            .map(|l| l.len())
+            .map(|l| {
+                let mut write_buf = Vec::new();
+                l.encode(&mut write_buf).unwrap();
+                write_buf.len()
+            })
             .collect::<Vec<_>>()
     );
 

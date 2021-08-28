@@ -83,10 +83,7 @@ fn dump_funt_chunk(funt_chunk: FunTChunk) -> Result<(), AnyError> {
 }
 
 fn dump_litt_chunk(litt_chunk: LitTChunk) -> Result<(), AnyError> {
-    for literal in litt_chunk.literals {
-        println!("---");
-        println!("{}", PrettyBytes(&literal));
-    }
+    println!(" literlas: {:#?}", litt_chunk.literals);
     Ok(())
 }
 

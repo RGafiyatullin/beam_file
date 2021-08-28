@@ -7,11 +7,14 @@
 //! [BEAM]: http://rnyingma.synrc.com/publications/cat/Functional%20Languages/Erlang/BEAM.pdf
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use libflate::zlib;
+
 use std::io::{Cursor, Read, Write};
 use std::str;
 
 use crate::parts;
 use crate::Result;
+
+use std::result::Result as StdResult;
 
 /// The identifier which indicates the type of a chunk.
 pub type Id = [u8; 4];
@@ -301,13 +304,14 @@ impl Chunk for ExpTChunk {
 }
 
 /// A representation of the `"LitT"` chunk.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct LitTChunk {
     /// The list of literal terms.
     ///
     /// Each term is encoded in the [External Term Format]
     /// (http://erlang.org/doc/apps/erts/erl_ext_dist.html).
-    pub literals: Vec<parts::ExternalTermFormatBinary>,
+    // pub literals: Vec<parts::EtfTerm>,
+    pub literals: Vec<parts::EtfTerm>,
 }
 impl Chunk for LitTChunk {
     fn id(&self) -> &Id {
@@ -329,22 +333,32 @@ impl Chunk for LitTChunk {
             decoder.read_exact(&mut buf)?;
             literals.push(buf);
         }
+        let literals = literals
+            .into_iter()
+            .map(Cursor::new)
+            .map(parts::EtfTerm::decode)
+            .collect::<StdResult<Vec<_>, _>>()?;
         Ok(LitTChunk { literals })
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {
-        let uncompressed_size = self
-            .literals
-            .iter()
-            .fold(4, |acc, l| acc + 4 + l.len() as u32);
-        writer.write_u32::<BigEndian>(uncompressed_size)?;
-
-        let mut encoder = zlib::Encoder::new(writer)?;
-        encoder.write_u32::<BigEndian>(self.literals.len() as u32)?;
+        let mut uncompressed_size = 0;
+        let mut encoded_literals = Vec::with_capacity(self.literals.len());
         for literal in &self.literals {
-            encoder.write_u32::<BigEndian>(literal.len() as u32)?;
-            encoder.write_all(literal)?;
+            let mut encode_buf = Vec::new();
+            let () = literal.encode(&mut encode_buf)?;
+
+            uncompressed_size += encode_buf.len();
+            let () = encoded_literals.push(encode_buf);
         }
-        encoder.finish().into_result()?;
+
+        let () = writer.write_u32::<BigEndian>(uncompressed_size as u32)?;
+
+        let mut z_encoder = zlib::Encoder::new(writer)?;
+        for encoded_literal in encoded_literals {
+            let () = z_encoder.write_u32::<BigEndian>(encoded_literal.len() as u32)?;
+            let () = z_encoder.write_all(encoded_literal.as_slice())?;
+        }
+        let _writer = z_encoder.finish().into_result()?;
         Ok(())
     }
 }
@@ -616,7 +630,7 @@ impl Chunk for DocsChunk {
 /// let beam = BeamFile::<StandardChunk>::from_file("tests/testdata/test.beam").unwrap();
 /// assert_eq!(b"Atom", beam.chunks.iter().nth(0).map(|c| c.id()).unwrap());
 /// ```
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub enum StandardChunk {
     Atom(AtomChunk),
     Code(CodeChunk),

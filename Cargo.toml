@@ -17,6 +17,7 @@ coveralls = {repository = "sile/beam_file"}
 thiserror = "^1"
 byteorder = "1.2"
 libflate = "^1"
+eetf = "^0.6"
 
 [dev-dependencies]
 eyre = "^0.6"

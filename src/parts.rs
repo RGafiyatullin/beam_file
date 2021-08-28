@@ -1,5 +1,11 @@
 //! A collection of the miscellaneous parts used in a BEAM file.
 
+/// An Erlang Term
+///
+/// This type is treated as opaque within this crate.
+/// If it is necessary to work with the contents of such terms — use the `eetf` crate.
+pub use eetf::Term as EtfTerm;
+
 /// The identifier of an atom.
 ///
 /// The corresponding atom can be retrieved from the "Atom" chunk.
