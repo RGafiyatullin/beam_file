@@ -179,6 +179,7 @@ fn standard_chunks() {
     // assert_eq!(307, etf_encode(&find_chunk!(beam, Abst).term).len());
 }
 
+#[derive(Debug, PartialEq)]
 enum EncodeTestChunk {
     Idempotent(chunk::StandardChunk),
     Other(chunk::RawChunk),
@@ -218,9 +219,8 @@ fn etf_encode(term: &parts::EtfTerm) -> Vec<u8> {
     encode_buf
 }
 
-#[ignore] // Seems like `eetf::encode(eetf::decode(original)) != original` (observed in Abst chunk)
 #[test]
-fn encode_chunks() {
+fn encode_then_decode_should_be_equal_to_the_original() {
     let mut original = Vec::new();
     std::io::copy(
         &mut File::open(test_file("test.beam")).unwrap(),
@@ -228,11 +228,13 @@ fn encode_chunks() {
     )
     .unwrap();
 
-    let beam = BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&original)).unwrap();
+    let beam_from_file = BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&original)).unwrap();
     let mut encoded = Vec::new();
-    beam.to_writer(&mut encoded).unwrap();
+    beam_from_file.to_writer(&mut encoded).unwrap();
 
-    assert_eq!(original, encoded);
+    let beam_from_encoded = BeamFile::<EncodeTestChunk>::from_reader(std::io::Cursor::new(&encoded)).unwrap();
+
+    assert_eq!(beam_from_file, beam_from_encoded);
 }
 
 fn test_file(name: &str) -> PathBuf {

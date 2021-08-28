@@ -15,7 +15,7 @@ use crate::{Error, Result};
 /// let beam = BeamFile::<RawChunk>::from_file("tests/testdata/test.beam").unwrap();
 /// assert_eq!(b"Atom", beam.chunks.iter().nth(0).map(|c| c.id()).unwrap());
 /// ```
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BeamFile<C> {
     pub chunks: Vec<C>,
 }
