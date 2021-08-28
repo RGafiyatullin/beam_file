@@ -73,7 +73,7 @@ fn dump_chunk(chunk: StandardChunk) -> Result<(), AnyError> {
 }
 
 fn dump_docs_chunk(docs_chunk: DocsChunk) -> Result<(), AnyError> {
-    println!("{}", PrettyBytes(&docs_chunk.term));
+    println!("  docs: {:#?}", docs_chunk.term);
     Ok(())
 }
 
@@ -93,7 +93,7 @@ fn dump_strt_chunk(strt_chunk: StrTChunk) -> Result<(), AnyError> {
 }
 
 fn dump_abst_chunk(abst_chunk: AbstChunk) -> Result<(), AnyError> {
-    println!(" ast: {:#?}", abst_chunk.term);
+    println!("  ast: {:#?}", abst_chunk.term);
     Ok(())
 }
 
@@ -128,7 +128,7 @@ fn dump_attr_chunk(attr_chunk: AttrChunk) -> Result<(), AnyError> {
 }
 
 fn dump_dbgi_chunk(dbgi_chunk: DbgiChunk) -> Result<(), AnyError> {
-    println!(" debug-info: {:#?}", dbgi_chunk.term);
+    println!("  debug-info: {:#?}", dbgi_chunk.term);
     Ok(())
 }
 

@@ -574,7 +574,7 @@ impl Chunk for DbgiChunk {
 }
 
 /// A representation of the `"Docs"` chunk.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct DocsChunk {
     /// The 'Docs' chunk contains embedded module documentation, such as moduledoc/doc in Elixir
     ///
@@ -602,7 +602,7 @@ pub struct DocsChunk {
     ///         doc_element :: {{kind :: atom(), function :: atom(), arity}, Anno, signature, doc_content(), Metadata}
     /// ```
     ///
-    pub term: parts::ExternalTermFormatBinary,
+    pub term: parts::EtfTerm,
 }
 impl Chunk for DocsChunk {
     fn id(&self) -> &Id {
@@ -615,10 +615,11 @@ impl Chunk for DocsChunk {
         aux::check_chunk_id(id, b"Docs")?;
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf)?;
-        Ok(DocsChunk { term: buf })
+        let term = aux::etf_decode(buf)?;
+        Ok(DocsChunk { term })
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {
-        writer.write_all(&self.term)?;
+        writer.write_all(aux::etf_encode(&self.term)?.as_slice())?;
         Ok(())
     }
 }
