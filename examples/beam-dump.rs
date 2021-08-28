@@ -128,7 +128,7 @@ fn dump_attr_chunk(attr_chunk: AttrChunk) -> Result<(), AnyError> {
 }
 
 fn dump_dbgi_chunk(dbgi_chunk: DbgiChunk) -> Result<(), AnyError> {
-    println!("{}", PrettyBytes(&dbgi_chunk.term));
+    println!(" debug-info: {:#?}", dbgi_chunk.term);
     Ok(())
 }
 

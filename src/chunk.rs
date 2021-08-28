@@ -534,7 +534,7 @@ impl Chunk for AbstChunk {
 }
 
 /// A representation of the `"Dbgi"` chunk.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub struct DbgiChunk {
     /// The debug information for a module (i.e., BEAM file).
     ///
@@ -551,7 +551,7 @@ pub struct DbgiChunk {
     /// Where `Backend` is a module which implements `debug_info/4`, and is responsible for
     /// converting `Data` to different representations as described [here](http://erlang.org/doc/man/beam_lib.html#type-debug_info).
     /// Debug information can be used to reconstruct original source code.
-    pub term: parts::ExternalTermFormatBinary,
+    pub term: parts::EtfTerm,
 }
 impl Chunk for DbgiChunk {
     fn id(&self) -> &Id {
@@ -564,10 +564,11 @@ impl Chunk for DbgiChunk {
         aux::check_chunk_id(id, b"Dbgi")?;
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf)?;
-        Ok(DbgiChunk { term: buf })
+        let term = aux::etf_decode(buf)?;
+        Ok(DbgiChunk { term })
     }
     fn encode_data<W: Write>(&self, mut writer: W) -> Result<()> {
-        writer.write_all(&self.term)?;
+        writer.write_all(aux::etf_encode(&self.term)?.as_slice())?;
         Ok(())
     }
 }
